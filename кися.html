@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>кто кися мая</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fbc2eb 100%);
+    font-family: Georgia, serif;
+    overflow: hidden;
+    padding: 20px;
+    transition: background 0.6s ease;
+  }
+
+  /* === ЭКРАНЫ === */
+  .screen {
+    display: none;
+    width: 100%;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+  .screen.active { display: flex; }
+
+  /* === СТАРТОВЫЙ ВОПРОС === */
+  .question-box {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 50px 40px;
+    border-radius: 24px;
+    text-align: center;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(200, 50, 100, 0.25);
+    animation: fadeIn 1s ease;
+  }
+
+  .question-box h1 {
+    font-size: 2em;
+    color: #c2185b;
+    margin-bottom: 35px;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+  }
+
+  .btn {
+    padding: 14px 40px;
+    font-size: 1.2em;
+    font-family: Georgia, serif;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-weight: bold;
+  }
+  .btn:hover { transform: scale(1.08); }
+  .btn:active { transform: scale(0.96); }
+
+  .btn-yes {
+    background: linear-gradient(135deg, #ff6a9c, #c2185b);
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(194, 24, 91, 0.4);
+  }
+  .btn-no {
+    background: #eee;
+    color: #555;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  /* === ЧЁРНЫЙ ЭКРАН "Э ТЫ ЧЕ" === */
+  #screen-no {
+    background: #000;
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+  }
+
+  .no-text {
+    color: #fff;
+    font-size: 5em;
+    font-weight: bold;
+    text-align: center;
+    animation: shake 0.5s ease;
+    padding: 20px;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-15px); }
+    40% { transform: translateX(15px); }
+    60% { transform: translateX(-10px); }
+    80% { transform: translateX(10px); }
+  }
+
+  .second-chance {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    padding: 10px 22px;
+    font-size: 0.95em;
+    font-family: Georgia, serif;
+    background: transparent;
+    color: #999;
+    border: 1px solid #555;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .second-chance:hover {
+    color: #fff;
+    border-color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* === ФИНАЛЬНАЯ ОТКРЫТКА === */
+  .card {
+    background: rgba(255, 255, 255, 0.88);
+    padding: 50px 40px;
+    border-radius: 24px;
+    text-align: center;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(200, 50, 100, 0.25);
+    animation: fadeIn 1.5s ease;
+    position: relative;
+    z-index: 2;
+  }
+
+  .card h1 {
+    font-size: 2em;
+    color: #c2185b;
+    margin-bottom: 20px;
+  }
+
+  .card p {
+    font-size: 1.15em;
+    color: #6a1b3d;
+    line-height: 1.7;
+    margin-bottom: 15px;
+  }
+
+  .heart {
+    font-size: 3em;
+    animation: beat 1.2s infinite;
+    display: inline-block;
+    margin-top: 20px;
+  }
+
+  @keyframes beat {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.2); }
+    50% { transform: scale(1); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .floating-heart {
+    position: fixed;
+    bottom: -50px;
+    animation: floatUp linear infinite;
+    opacity: 0.7;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  @keyframes floatUp {
+    to { transform: translateY(-110vh) rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ЭКРАН 1: ВОПРОС -->
+  <div class="screen active" id="screen-question">
+    <div class="question-box">
+      <h1>ты кися мая? </h1>
+      <div class="btn-row">
+        <button class="btn btn-yes" onclick="showFinal()">да!!</button>
+        <button class="btn btn-no" onclick="showNo()">нет</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ЭКРАН 2: ЧЁРНЫЙ "э ты че" -->
+  <div class="screen" id="screen-no">
+    <div class="no-text">э ты че</div>
+    <button class="second-chance" onclick="showQuestion()">еще раз давай</button>
+  </div>
+
+  <!-- ЭКРАН 3: ФИНАЛЬНАЯ ОТКРЫТКА -->
+  <div class="screen" id="screen-final">
+    <div class="card">
+      <h1>солнышка мая</h1>
+      <p>я тебя очень сильна люблю мяукмяякукмяумяукку</p>
+      <p>ты мая любимая кисечка котичка падушечка мини штучка квалити четыре предмет я очень саскучилась очнь хочу поскорее поняшиться качественна и поохотица </p>
+      <p>вот такую фигню для тебя сделала</p>
+      <div class="heart">❤️</div>
+    </div>
+  </div>
+
+<script>
+  var screenQuestion = document.getElementById('screen-question');
+  var screenNo = document.getElementById('screen-no');
+  var screenFinal = document.getElementById('screen-final');
+
+  function hideAll() {
+    screenQuestion.classList.remove('active');
+    screenNo.classList.remove('active');
+    screenFinal.classList.remove('active');
+  }
+
+  function showQuestion() {
+    hideAll();
+    screenQuestion.classList.add('active');
+  }
+
+  function showNo() {
+    hideAll();
+    screenNo.classList.add('active');
+  }
+
+  function showFinal() {
+    hideAll();
+    screenFinal.classList.add('active');
+    startHearts();
+  }
+
+  /* Плавающие сердечки — запускаются только на финальном экране */
+  var heartsStarted = false;
+  function startHearts() {
+    if (heartsStarted) return;
+    heartsStarted = true;
+    var emojis = ['❤️', '💖', '💕', '💗', '🌸', '💘'];
+    setInterval(function () {
+      var h = document.createElement('div');
+      h.className = 'floating-heart';
+      h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      h.style.left = Math.random() * 100 + 'vw';
+      h.style.animationDuration = (Math.random() * 3 + 4) + 's';
+      h.style.fontSize = (Math.random() * 20 + 16) + 'px';
+      document.body.appendChild(h);
+      setTimeout(function () { h.remove(); }, 8000);
+    }, 400);
+  }
+</script>
+
+</body>
+</html>
